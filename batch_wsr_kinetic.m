@@ -162,6 +162,8 @@ V01=V1;
 V02=V2;
 rho01=rho1;
 rho02=rho2;
+m1tot_0=mtot1;
+m1tot_00=mtot1;
 
 Time=0;
 Time1=0;
@@ -199,9 +201,9 @@ for t=dt:dt:tEnd
       disp(['Time: ' num2str(t)]);
   end
   err_iter=1;
-  nIter=0;  
+  nIter=0;
   single_phase=0;
-  mdot_in_o = -(m01tot - m001tot)/dt;
+  mdot_in_o = -(m1tot_0 - m1tot_00)/dt;
   mdot_out = mdot_in_w + mdot_in_o;
   mdot_out_prev = mdot_out;
   single_phase_prevIter = single_phase;
@@ -441,7 +443,10 @@ for t=dt:dt:tEnd
                  mdot_in_w*dt - mdot_in_o*dt); 
   err_cum_mass = err_cum_mass + err_mass;%(mass1 + mass2 + mck - mass01 - mass02 - mck0 + mdot_out*dt - ...
                                          %mdot_in_w*dt - mdot_in_o*dt); 
- 
+
+  m1tot_00 = m1tot_0;
+  m1tot_0 = mass1;
+
   if (mod(t,t_write_interval)<1e-6)
       Time=[Time;t];
       M1=[M1;m1'];
@@ -502,10 +507,10 @@ MrFinal = Mr(end,:);
 % In MTotFinal, H2O is replaced by Coke as 
 % the Nth species
 MTotFinal = MtFinal + MrFinal;
+MTotFinal(1,end) = Mck(end,1);
 if(mdot_in_o > 0)
     MTotFinal = MTotFinal/Mtot01;
 end
-MTotFinal(1,end) = Mck(end,1);
 MTotFinalSum = MTotFinal*ones(N,1);
 fprintf('%6.4f\n',MTotFinal);
 fprintf('%6.4f\n',MTotFinalSum);
