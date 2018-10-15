@@ -12,16 +12,16 @@ kiName = strcat('k',num2str(kIndex));
 
 errWt=[1;1;1;1];
 
-lStyles=[': ';'-.';'--';'- '];
+lStyles=[': ';':*';'-.';'--';'- '];
 colors=['g';'r';'m';'k'];
 markers=['^';'o';'s';'v'];
 
-lWidth = [4;2;2;2];
+lWidth = [4;4;2;2;2];
 mrkSize = 18;
 
 nk = numel(ki);
 
-data=load('../data/Oil-683K.dat');
+data=load('../data/SCW-683K.dat');
 tData=data(1:5,1);
 Data(:,1)=data(1:5,5)/100;
 Data(:,2)=data(1:5,3)/100;
@@ -33,7 +33,7 @@ Mtot1=zeros(nTimes,4,nk);
 
 err=zeros(nk,5);
 
-errWtSum = ones(1,nk)*errWt;
+errWtSum = ones(1,4)*errWt;
 errWt = errWt/errWtSum;
 
 for ik=1:nk
