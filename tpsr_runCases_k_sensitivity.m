@@ -87,6 +87,7 @@ MW=d(sp,7);
 d1=load('y0.dat+');
 y1=d1(1,:)';
 y2=d1(2,:)';
+yMAvr=y1(5,1)+y1(6,1); 
 
 TName = num2str(T);
 kFileName = strcat('k1',TName,'.dat+');
@@ -100,13 +101,34 @@ k2=load(kFileName);
 
 %%---------------------------------------------------------------------------------%%
 for ik=1:nk
+
     ki_tmp = ki(ik,1);
-    if(phIndex == 1)
-        k1(kIndex,1) = ki_tmp;
-        k2(kIndex,1) = ki_tmp;
+
+    if(kIndex <= 14)
+        if(kIndex == 2)
+            if(phIndex == 1)
+                k1(kIndex,1) = ki_tmp;                
+                k1(kIndex+1,1) = ki_tmp;                
+            else
+                k2(kIndex,1) = ki_tmp;
+                k2(kIndex+1,1) = ki_tmp;
+            end
+        else
+            if(phIndex == 1)
+                k1(kIndex,1) = ki_tmp;
+            else
+                k2(kIndex,1) = ki_tmp;
+            end
+        end
     else
-        k2(kIndex,1) = ki_tmp;
+        y1(5,1) = ki_tmp;
+        y1(6,1) = yMAvr - y1(5,1);
     end
+
+    if(sp(end) ~= 19)
+        k2 = k1;
+    end
+
     ikName = num2str(ik);
     caseName = strcat('case_',kiName,'_',ikName);
     out_dir_name = strcat('results/',caseName);

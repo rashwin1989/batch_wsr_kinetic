@@ -10,7 +10,7 @@ dkSens=load('input_k.dat+');
 ki=dkSens(1,:)';
 kiName = strcat('k',num2str(kIndex));
 
-errWt=[1;1;1;1];
+errWt=[1;1;2;2];
 
 lStyles=[': ';':*';'-.';'--';'- '];
 colors=['g';'r';'m';'k'];
@@ -21,7 +21,7 @@ mrkSize = 18;
 
 nk = numel(ki);
 
-data=load('../data/SCW-683K.dat');
+data=load('../data/SCW-703K.dat');
 tData=data(1:5,1);
 Data(:,1)=data(1:5,5)/100;
 Data(:,2)=data(1:5,3)/100;
