@@ -17,7 +17,8 @@ close all;
 
 %%---------------------------------------------------------------------------------%%
 T = [683;703];
-tEnd = [30;60];
+TIndex = [3;5];
+tEnd = [60;30];
 k_mt = [1;0.1;0.05;0.01;0.005;0.001];
 NWR = [5;10;25;50;75;100;150;200;300;400];
 %Read and set input parameters
@@ -82,30 +83,34 @@ d1=load('y0.dat+');
 y1=d1(1,:)';
 y2=d1(2,:)';
 
+k1Dat = load('k1663to723.dat+');
+k2Dat = load('k2663to723.dat+');
+
 %%---------------------------------------------------------------------------------%%
 for iT=1:nT
 
     %Read chemical kinetic parameters data from files
     T_tmp = T(iT,1);
+    TIndex_tmp = TIndex(iT,1);
     tEnd_tmp = tEnd(iT,1);
-    TName = num2str(T_tmp);
-    kFileName = strcat('k1',TName,'.dat+');
-    k1=load(kFileName);
-    kFileName = strcat('k2',TName,'.dat+');
-    k2=load(kFileName);
+    iTName = num2str(iT);
+    TName = num2str(T_tmp);   
+    k1=k1Dat(:,TIndex_tmp);
+    k2=k2Dat(:,TIndex_tmp);
 
     for ikmt=1:nkmt
 
         k_mt_tmp = k_mt(ikmt,1);
+        ikmtName = num2str(ikmt);
+        kmtName = num2str(k_mt_tmp);
 
         for iNWR=1:nNWR
 
             NWR_tmp = NWR(iNWR,1);
-            iTName = num2str(iT);
-            ikmtName = num2str(ikmt);
             iNWRName = num2str(iNWR);
-            caseName = strcat('case','_',iTName,'_',ikmtName, ...
-                                  '_',iNWRName);
+            NWRName = num2str(NWR_tmp);            
+            caseName = strcat('case','_','T=',TName,'_kmt=',ikmtName, ...
+                                  '_NWR=',iNWRName);
             out_dir_name = strcat('results/',caseName);
             mkdir(out_dir_name);
             yieldsFileName = strcat(out_dir_name,'/yields.dat');
