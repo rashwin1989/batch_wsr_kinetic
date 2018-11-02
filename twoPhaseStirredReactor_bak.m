@@ -1,8 +1,8 @@
-function [MTotFinal MTotFinalSum Time_data M1 M2 Mck_data Mr Mt Mto Mdot_out_all ...
+function [MTotFinal MTotFinalSum Time_data M1 M2 Mck_data Mr Mt Mdot_out_all ...
           R1 R2 Mdot_intfc] ... 
           = ... 
           twoPhaseStirredReactor ...
-          (batch,T,P,mtot01,mtot02,V0,waterInRatio,oilInRatio,oilOutRatio,k_mt, ...
+          (batch,T,P,mtot01,mtot02,V0,waterInRatio,oilInRatio,k_mt, ...
            tEnd,tEnd0,dt,t_write_interval,err_tol,chem_tol,nIterMax, ...       
            calcOilIn,out_dir_name,k1,k2,sp,Tc,Pc,w,MW,y1,y2,dmdt_max,initial_equilibrate)
 
@@ -56,9 +56,8 @@ if(batch==1)
 end
 mdot_in_w=mtot01*waterInRatio/tEnd0; %inlet mass flow rate of water
                                      %in g/min
-mdot_in_o=(1+oilOutRatio)*mtot01*oilInRatio/tEnd0; %inlet mass flow rate of oil
+mdot_in_o = mtot01*oilInRatio/tEnd0; %inlet mass flow rate of oil
                                      %in g/min
-mdot_out_o=mtot01*oilInRatio*oilOutRatio/tEnd0;
 
 %dmdt_max=[100 100 100 100 100 100 100 100 100]';
 %initial_equilibrate=0;
@@ -150,12 +149,10 @@ V2=mtot2/rho2;
 V0=V1+V2;
 
 % initial guess for outlet mass flow rate
-mdot_out = mdot_in_w + mdot_in_o - mdot_out_o;
+mdot_out = mdot_in_w + mdot_in_o;
 
 mt=zeros(N,1);
-mto=zeros(N,1);
 m0t=mt;
-m0to=mto;
 m01=m1;
 m02=m2;
 mck01=mck1;
@@ -182,7 +179,6 @@ Mck2=mck2;
 Mck=mck;
 Mr=(m1+m2)';
 Mt=mt';
-Mto=mto';
 Mtot1=mtot1;
 Mtot2=mtot2;
 Mdot_out_all=zeros(1,N);
@@ -195,7 +191,6 @@ R2=zeros(1,N+1);
 Mdot_intfc=zeros(1,N);
 Mdot_out=mdot_out;
 Mdot_in_o=mdot_in_o;
-Mdot_out_o=mdot_out_o;
 Err_mdot=0;
 Err_mass=0;
 Err_R1=0;
@@ -218,8 +213,8 @@ for t=dt:dt:tEnd
   nIter=0;
   single_phase=0;
   %mdot_in_o = -(m1tot_0 - m1tot_00)/dt;
-  %mdot_in_o = 0;
-  mdot_out = mdot_in_w + mdot_in_o - mdot_out_o;
+  mdot_in_o = 0;
+  mdot_out = mdot_in_w + mdot_in_o;
   mdot_out_prev = mdot_out;
   single_phase_prevIter = single_phase;
   V1_prevIter = V1;
@@ -245,11 +240,9 @@ for t=dt:dt:tEnd
           mt = m0t + mdot_out*dt*yw;
       end
       if (mdot_in_o >= 0)
-          m1 = m01 + mdot_in_o*dt*yoil - mdot_out_o*dt*y01;
-          mto = m0to + mdot_out_o*dt*y01;
+          m1 = m01 + mdot_in_o*dt*yoil;
       else
-          m1 = m01 + mdot_in_o*dt*y01 - mdot_out_o*dt*y01;
-          mto = m0to + mdot_out_o*dt*y01;
+          m1 = m01 + mdot_in_o*dt*y01;
       end
       mck1 = mck01;
       mck2 = mck02;
@@ -369,18 +362,14 @@ for t=dt:dt:tEnd
           end
       else
           if(calcOilIn==1)
-              mtot1=m1'*ones(N,1);
-              mdot_in_o_prev=mdot_in_o;
-              mdot_out_o_prev=mdot_out_o;
-              mdot_in_o=mdot_in_o + (1+oilOutRatio)*(mtot01-mtot1)/dt;
-              mdot_out_o=mdot_out_o + oilOutRatio*(mtot01-mtot1)/dt;
+              mtot1 = m1'*ones(N,1);
+              mdot_in_o_prev = mdot_in_o;
+              mdot_in_o = mdot_in_o + (mtot01 - mtot1)/dt;              
               if (mdot_in_o < 0)
-                  mdot_in_o = 0;
-                  mdot_out_o = 0;
-              end              
+                  mdot_in_o = 0;                  
+              end
               dmdot_in_o = mdot_in_o - mdot_in_o_prev;
-              dmdot_out_o = mdot_out_o - mdot_out_o_prev;
-              m1 = m1 + dmdot_in_o*dt*yoil - dmdot_out_o*dt*y01;
+              m1 = m1 + dmdot_in_o*dt*yoil;
               mtot1 = m1'*ones(N,1);
           else
               mtot1 = m1'*ones(N,1);
@@ -400,7 +389,7 @@ for t=dt:dt:tEnd
           if (batch==0)              
               V2 = V0 - V1;
               mtot2_new = V2*rho2;
-              mdot_out = mdot_in_w + mdot_in_o - mdot_out_o - (mtot1 + mtot2_new + mck - mtot01 - mtot02 - mck0)/dt;               
+              mdot_out = mdot_in_w + mdot_in_o - (mtot1 + mtot2_new + mck - mtot01 - mtot02 - mck0)/dt;               
 
               err_m1 = norm(m1 - m1_prev);
               err_m2 = norm(m2 - m2_prev);
@@ -425,7 +414,7 @@ for t=dt:dt:tEnd
   mass01 = m01'*ones(N,1);
   mass2 = m2'*ones(N,1);
   mass02 = m02'*ones(N,1);
-  err_mass = abs(mass1 + mass2 + mck - mass01 - mass02 - mck0 + mdot_out*dt + mdot_out_o*dt - ...
+  err_mass = abs(mass1 + mass2 + mck - mass01 - mass02 - mck0 + mdot_out*dt - ...
                  mdot_in_w*dt - mdot_in_o*dt); 
   err_cum_mass = err_cum_mass + err_mass;%(mass1 + mass2 + mck - mass01 - mass02 - mck0 + mdot_out*dt - ...
                                          %mdot_in_w*dt - mdot_in_o*dt); 
@@ -436,7 +425,6 @@ for t=dt:dt:tEnd
       M2=[M2;m2'];
       Mr=[Mr;(m1+m2)'];
       Mt=[Mt;mt'];
-      Mto=[Mto;mto'];
       Mck1=[Mck1;mck1];
       Mck2=[Mck2;mck2];
       Mck=[Mck;mck];
@@ -452,7 +440,6 @@ for t=dt:dt:tEnd
       Mdot_out=[Mdot_out;mdot_out];
       Mdot_out_all=[Mdot_out_all;mdot_out*y2'];
       Mdot_in_o=[Mdot_in_o;mdot_in_o];
-      Mdot_out_o=[Mdot_out_o;mdot_out_o];
       Err_mass=[Err_mass;err_mass];
       Err_cum_mass=[Err_cum_mass;err_cum_mass];
       Err_mdot=[Err_mdot;err_mdot];          
@@ -463,10 +450,8 @@ for t=dt:dt:tEnd
       NIters_outer = [NIters_outer;nIter];
       NSteps_chem = [NSteps_chem;nChemSteps];
 
-      fprintf(['%-10s %-12s %-10s %-6s %-10s %-12s %-6s %-6s %-6s ' ...
-      '%-6s %-8s %-10s %-10s %-10s %-10s\n'],'err_mass','err_cum_mass','err_mdot','nIter','nChemSteps','single_phase','mtot1','mtot2','V1','V2','(V1+V2)','mdot_in_w','mdot_in_o','mdot_out','mdot_out_o');
-      fprintf(['%-10.4e %-12.4e %-10.4e %-6d %-10d %-12d %-6.2f ' ...
-      '%-6.2f %-6.2f %-6.2f %-8.2f %-10.4e %-10.4e %-10.4e %-10.4e\n'],err_mass,err_cum_mass,err_mdot,nIter,nChemSteps,single_phase,mtot1,mtot2,V1,V2,(V1+V2),mdot_in_w,mdot_in_o,mdot_out,mdot_out_o);
+      fprintf(['%-10s %-12s %-10s %-6s %-10s %-12s %-6s %-6s %-6s %-6s %-8s %-10s %-10s\n'],'err_mass','err_cum_mass','err_mdot','nIter','nChemSteps','single_phase','mtot1','mtot2','V1','V2','(V1+V2)','mdot_in_o','mdot_out');
+      fprintf(['%-10.4e %-12.4e %-10.4e %-6d %-10d %-12d %-6.2f %-6.2f %-6.2f %-6.2f %-8.4e %-10.4e %-10.4e\n'],err_mass,err_cum_mass,err_mdot,nIter,nChemSteps,single_phase,mtot1,mtot2,V1,V2,(V1+V2),mdot_in_o,mdot_out);
   end  
 
   Mtot01 = Mtot01 + mdot_in_o*dt;
@@ -477,7 +462,6 @@ for t=dt:dt:tEnd
   mck02 = mck2;
   mck0 = mck;
   m0t = mt;
-  m0to = mto;
   y01 = y1;
   y02 = y2;
   mtot01=mtot1;
@@ -493,16 +477,14 @@ Mck1 = Mck1/Mtot01;
 Mck2 = Mck2/Mtot01;
 Mck = Mck/Mtot01;
 Mt = Mt/Mtot01;
-Mto = Mto/Mtot01;
 Mr = Mr/Mtot01;
 %end
 
 MtFinal = Mt(end,:);
-MtoFinal = Mto(end,:);
 MrFinal = Mr(end,:);
 % In MTotFinal, H2O is replaced by Coke as 
 % the Nth species
-MTotFinal = MtFinal + MtoFinal + MrFinal;
+MTotFinal = MtFinal + MrFinal;
 MTotFinal(1,end) = Mck(end,1);
 % if(mdot_in_o > 0)
 %     MTotFinal = MTotFinal/Mtot01;
@@ -510,11 +492,10 @@ MTotFinal(1,end) = Mck(end,1);
 MTotFinalSum = MTotFinal*ones(N,1);
 fprintf('%6.4f\n',MTotFinal);
 fprintf('%6.4f\n',MTotFinalSum);
-fprintf('%6.4f\n',MTot01);
 %MTotFinal
 %MTotFinalSum
 
-Time_data=[Time Mtot1 Mtot2 Mck1 Mck2 V_oil V_water V_reactor reactor_single_phase Mdot_out Mdot_in_o Mdot_out_o ...
+Time_data=[Time Mtot1 Mtot2 Mck1 Mck2 V_oil V_water V_reactor reactor_single_phase Mdot_out Mdot_in_o ...
           Err_mass Err_cum_mass Err_mdot Err_R1 Err_R2 Err_F1 Err_F2 NIters_outer ...
           NSteps_chem];
 Mck_data=[Mck1 Mck2 Mck];
