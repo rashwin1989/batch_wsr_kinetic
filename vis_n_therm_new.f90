@@ -2022,14 +2022,14 @@ subroutine phase_stability_iteration2( &
   stable = 1
   if (sumY > one) stable = 0
 
-  print *, 'stability test'
-  print *, '# iterations ', j
-  print *, j, stable,  sumY1, sumY2
-  print *, 'y        z'
-  do i=1,n
-     print *, y(i), '  ', z(i)
-  end do
-  print *
+  !print *, 'stability test'
+  !print *, '# iterations ', j
+  !print *, j, stable,  sumY1, sumY2
+  !print *, 'y        z'
+  !do i=1,n
+  !   print *, y(i), '  ', z(i)
+  !end do
+  !print *
 !1111 format (2I5 X1 8ES13.4)
 
 !}
@@ -2106,12 +2106,12 @@ subroutine phase_stability2( &
      lnK = 0.0d0
   end if
 
-  print *, 'stable', stable
-  print *, 'lnK test phase'
-  do i=1,n
-     print *, lnK(i)
-  end do
-  print *
+  !print *, 'stable', stable
+  !print *, 'lnK test phase'
+  !do i=1,n
+  !   print *, lnK(i)
+  !end do
+  !print *
 !}
 end subroutine phase_stability2
 
@@ -2162,7 +2162,7 @@ subroutine species_LLE4( &
      n_miscible = -1
      do i=1,maxLoop
 ! Successive Substitution iterations
-        print *, 'SSI # ', i
+        !print *, 'SSI # ', i
         lnK_old = lnK
         K = dexp(lnK)
         call calc_beta_RR(beta,n,xC,K)
@@ -2183,8 +2183,8 @@ subroutine species_LLE4( &
               err_norm_lnK = err_lnK(j)
            end if
         end do
-        print *, 'err_norm_lnK ', err_norm_lnK 
-        print *
+        !print *, 'err_norm_lnK ', err_norm_lnK 
+        !print *
         if (err_norm_lnK < tol) then
            exit
         end if
@@ -2292,10 +2292,10 @@ subroutine calc_beta_RR( &
   end do
 
   beta = b
-  print *, 'Phase fraction (beta) calculation'
-  print *, 'beta ', beta
-  print *, '# Brent iterations ', i  
-  print *, 'error f(beta) ', dabs(fb)
+  !print *, 'Phase fraction (beta) calculation'
+  !print *, 'beta ', beta
+  !print *, '# Brent iterations ', i  
+  !print *, 'error f(beta) ', dabs(fb)
 !}
 end subroutine calc_beta_RR
 
@@ -2338,7 +2338,7 @@ subroutine binaryLLE( &
 
   do i=1,maxLoop
      ! Successive Substitution iterations
-     print *, 'SSI # ', i
+     !print *, 'SSI # ', i
      lnK_old = lnK
      K = dexp(lnK)
      
@@ -2358,9 +2358,9 @@ subroutine binaryLLE( &
            err_norm_lnK = err_lnK(j)
         end if
      end do
-     print *, 'err_norm_lnK ', err_norm_lnK 
-     print *, 'x1 ', x1
-     print *, 'x2 ', x2
+     !print *, 'err_norm_lnK ', err_norm_lnK 
+     !print *, 'x1 ', x1
+     !print *, 'x2 ', x2
      if (err_norm_lnK < tol) then
         exit
      end if
